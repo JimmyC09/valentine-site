@@ -6,11 +6,12 @@
   <title>Valentine?</title>
   <style>
     :root{
-      --bg: #fff0f6;
-      --card: rgba(255,255,255,0.85);
-      --text: #222;
-      --yes: #22c55e;
-      --no: #ef4444;
+      --bg1:#ffe4f1;
+      --bg2:#fff0f6;
+      --card: rgba(255,255,255,0.88);
+      --text:#222;
+      --yes:#22c55e;
+      --no:#ef4444;
     }
 
     body{
@@ -19,7 +20,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      background: radial-gradient(circle at top, #ffe4f1, var(--bg));
+      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
       overflow:hidden;
@@ -43,6 +44,8 @@
       display:block;
       margin:0 auto 18px auto;
       box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+      user-select:none;
+      -webkit-user-drag:none;
     }
 
     h1{
@@ -65,51 +68,58 @@
       padding: 14px 22px;
       font-size: 1.1rem;
       cursor:pointer;
-      font-weight: 700;
-      transition: transform 0.15s ease;
+      font-weight: 800;
       box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+      transition: transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #yesBtn{ background: var(--yes); color:white; }
     #noBtn{ background: var(--no); color:white; }
 
+    button:active{ transform: scale(0.98); }
+
+    /* Fullscreen YES overlay */
     .takeover{
       position: fixed;
       inset: 0;
       display:flex;
       align-items:center;
       justify-content:center;
-      background: rgba(0,0,0,0.15);
+      background: rgba(0,0,0,0.18);
       z-index: 9999;
+      padding: 16px;
     }
 
     .takeover button{
-      width: 90vw;
-      height: 70vh;
-      font-size: 3rem;
+      width: 96vw;
+      height: 80vh;
+      border-radius: 24px;
+      font-size: clamp(2rem, 7vw, 4rem);
     }
 
     .hidden{ display:none !important; }
   </style>
 </head>
 <body>
-  <div class="card" id="card">
-    <img id="mainImg" src="https://picsum.photos/seed/valentine1/600/600">
+  <div class="card">
+    <img id="mainImg" src="https://picsum.photos/seed/valentine1/600/600" alt="pic" />
     <h1 id="questionText">Will you be my Valentine? 💘</h1>
 
     <div class="buttons" id="btnRow">
-      <button id="yesBtn">Yes 💚</button>
-      <button id="noBtn">No 💔</button>
+      <button id="yesBtn" type="button">Yes 💚</button>
+      <button id="noBtn" type="button">No 💔</button>
     </div>
   </div>
 
   <script>
+    // Swap these to your own files later (e.g., "main.jpg", "no1.jpg", etc.)
     const images = {
       start: "https://picsum.photos/seed/valentine1/600/600",
-      no1: "https://picsum.photos/seed/sad1/600/600",
-      no2: "https://picsum.photos/seed/sad2/600/600",
-      no3: "https://picsum.photos/seed/sad3/600/600",
-      yes: "https://picsum.photos/seed/happy/600/600",
+      no1:   "https://picsum.photos/seed/sad1/600/600",
+      no2:   "https://picsum.photos/seed/sad2/600/600",
+      no3:   "https://picsum.photos/seed/sad3/600/600",
+      yes:   "https://picsum.photos/seed/happy/600/600"
     };
 
     const mainImg = document.getElementById("mainImg");
@@ -120,54 +130,61 @@
 
     let noCount = 0;
 
+    function setScales(yesScale, noScale){
+      yesBtn.style.transform = "scale(" + yesScale + ")";
+      noBtn.style.transform  = "scale(" + noScale + ")";
+    }
+
+    function removeTakeover(){
+      const overlay = document.getElementById("takeover");
+      if (overlay) overlay.remove();
+    }
+
+    function showTakeover(){
+      removeTakeover();
+
+      const overlay = document.createElement("div");
+      overlay.className = "takeover";
+      overlay.id = "takeover";
+
+      const bigYes = document.createElement("button");
+      bigYes.type = "button";
+      bigYes.textContent = "YES 💚";
+      bigYes.style.background = getComputedStyle(yesBtn).backgroundColor || "#22c55e";
+      bigYes.style.color = "#fff";
+      bigYes.addEventListener("click", yesFlow);
+
+      overlay.appendChild(bigYes);
+      document.body.appendChild(overlay);
+    }
+
     function noFlow(){
-      noCount++;
+      noCount += 1;
 
       if (noCount === 1){
         questionText.textContent = "Yo bro";
         mainImg.src = images.no1;
-        yesBtn.style.transform = "scale(1.2)";
-      } 
-      else if (noCount === 2){
+        setScales(1.25, 0.90);
+      } else if (noCount === 2){
         questionText.textContent = "🤨";
         mainImg.src = images.no2;
-        yesBtn.style.transform = "scale(1.4)";
-      } 
-      else if (noCount === 3){
+        setScales(1.55, 0.75);
+      } else if (noCount === 3){
         questionText.textContent = "...";
         mainImg.src = images.no3;
-        yesBtn.style.transform = "scale(1.7)";
-      } 
-      else if (noCount === 4){
-  // TAKEOVER MODE
-  // Remove an old overlay if it exists (prevents duplicates)
-  const old = document.querySelector(".takeover");
-  if (old) old.remove();
-
-  const overlay = document.createElement("div");
-  overlay.className = "takeover";
-
-  // Clone the YES button so styling + behavior stays consistent
-  const bigYes = yesBtn.cloneNode(true);
-  bigYes.textContent = "YES 💚";
-
-  // Make sure click works on the cloned button
-  bigYes.addEventListener("click", () => {
-    yesFlow();
-  });
-
-  overlay.appendChild(bigYes);
-  document.body.appendChild(overlay);
-}
+        setScales(1.85, 0.60);
+      } else {
+        // 4th NO and beyond -> takeover
+        showTakeover();
+      }
+    }
 
     function yesFlow(){
-  const overlay = document.querySelector(".takeover");
-  if (overlay) overlay.remove();
-
-  mainImg.src = images.yes;
-  questionText.textContent = "YAYYY!! ❤️";
-  btnRow.classList.add("hidden");
-}
+      removeTakeover();
+      mainImg.src = images.yes;
+      questionText.textContent = "YAYYY!! 😍💖";
+      btnRow.classList.add("hidden");
+    }
 
     yesBtn.addEventListener("click", yesFlow);
     noBtn.addEventListener("click", noFlow);
