@@ -144,7 +144,15 @@
     function noFlow(){
       noCount++;
 
-      questionText.textContent = "Are you sure? 🥺";
+      if (noCount === 1){
+  questionText.textContent = "Yo bro";
+} 
+else if (noCount === 2){
+  questionText.textContent = "🤨";
+} 
+else if (noCount === 3){
+  questionText.textContent = "...";
+}
       hintText.textContent = `No presses: ${noCount}/3`;
 
       if (noCount === 1){
