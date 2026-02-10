@@ -139,24 +139,35 @@
         yesBtn.style.transform = "scale(1.7)";
       } 
       else if (noCount === 4){
-        // TAKEOVER MODE
-        const overlay = document.createElement("div");
-        overlay.className = "takeover";
+  // TAKEOVER MODE
+  // Remove an old overlay if it exists (prevents duplicates)
+  const old = document.querySelector(".takeover");
+  if (old) old.remove();
 
-        const bigYes = document.createElement("button");
-        bigYes.textContent = "YES 💚";
-        bigYes.onclick = yesFlow;
+  const overlay = document.createElement("div");
+  overlay.className = "takeover";
 
-        overlay.appendChild(bigYes);
-        document.body.appendChild(overlay);
-      }
-    }
+  // Clone the YES button so styling + behavior stays consistent
+  const bigYes = yesBtn.cloneNode(true);
+  bigYes.textContent = "YES 💚";
+
+  // Make sure click works on the cloned button
+  bigYes.addEventListener("click", () => {
+    yesFlow();
+  });
+
+  overlay.appendChild(bigYes);
+  document.body.appendChild(overlay);
+}
 
     function yesFlow(){
-      mainImg.src = images.yes;
-      questionText.textContent = "YAYYY!! ❤️";
-      btnRow.classList.add("hidden");
-    }
+  const overlay = document.querySelector(".takeover");
+  if (overlay) overlay.remove();
+
+  mainImg.src = images.yes;
+  questionText.textContent = "YAYYY!! ❤️";
+  btnRow.classList.add("hidden");
+}
 
     yesBtn.addEventListener("click", yesFlow);
     noBtn.addEventListener("click", noFlow);
