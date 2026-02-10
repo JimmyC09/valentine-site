@@ -43,8 +43,6 @@
       display:block;
       margin:0 auto 18px auto;
       box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-      user-select:none;
-      -webkit-user-drag:none;
     }
 
     h1{
@@ -68,16 +66,13 @@
       font-size: 1.1rem;
       cursor:pointer;
       font-weight: 700;
-      transition: transform 0.15s ease, width 0.15s ease, height 0.15s ease, font-size 0.15s ease;
+      transition: transform 0.15s ease;
       box-shadow: 0 8px 16px rgba(0,0,0,0.12);
     }
 
     #yesBtn{ background: var(--yes); color:white; }
     #noBtn{ background: var(--no); color:white; }
 
-    button:active{ transform: scale(0.98); }
-
-    /* Takeover mode: yes button covers the whole screen */
     .takeover{
       position: fixed;
       inset: 0;
@@ -86,101 +81,71 @@
       justify-content:center;
       background: rgba(0,0,0,0.15);
       z-index: 9999;
-      padding: 18px;
     }
 
-    .takeover #yesBtn{
-      width: min(900px, 96vw);
-      height: min(600px, 80vh);
-      font-size: clamp(2rem, 5vw, 4rem);
-      border-radius: 24px;
+    .takeover button{
+      width: 90vw;
+      height: 70vh;
+      font-size: 3rem;
     }
 
     .hidden{ display:none !important; }
-    .subtext{ margin-top: 6px; opacity: 0.85; font-size: 0.95rem; }
   </style>
 </head>
 <body>
   <div class="card" id="card">
-    <img id="mainImg" src="https://picsum.photos/seed/valentine1/600/600" alt="valentine pic">
+    <img id="mainImg" src="https://picsum.photos/seed/valentine1/600/600">
     <h1 id="questionText">Will you be my Valentine? 💘</h1>
 
     <div class="buttons" id="btnRow">
-      <button id="yesBtn" type="button">Yes 💚</button>
-      <button id="noBtn" type="button">No 💔</button>
+      <button id="yesBtn">Yes 💚</button>
+      <button id="noBtn">No 💔</button>
     </div>
-
-    <div class="subtext" id="hintText">Choose wisely 😌</div>
   </div>
 
   <script>
-    // Swap these with your own image URLs if you want
     const images = {
       start: "https://picsum.photos/seed/valentine1/600/600",
-      no1:   "https://picsum.photos/seed/sad1/600/600",
-      no2:   "https://picsum.photos/seed/sad2/600/600",
-      no3:   "https://picsum.photos/seed/sad3/600/600",
-      yes:   "https://picsum.photos/seed/happy/600/600",
+      no1: "https://picsum.photos/seed/sad1/600/600",
+      no2: "https://picsum.photos/seed/sad2/600/600",
+      no3: "https://picsum.photos/seed/sad3/600/600",
+      yes: "https://picsum.photos/seed/happy/600/600",
     };
 
     const mainImg = document.getElementById("mainImg");
     const questionText = document.getElementById("questionText");
-    const hintText = document.getElementById("hintText");
     const yesBtn = document.getElementById("yesBtn");
     const noBtn = document.getElementById("noBtn");
     const btnRow = document.getElementById("btnRow");
-    const card = document.getElementById("card");
 
     let noCount = 0;
-
-    function setButtonSizes(yesScale, noScale){
-      yesBtn.style.transform = `scale(${yesScale})`;
-      noBtn.style.transform  = `scale(${noScale})`;
-      // also bump font size slightly for "yes" as it grows
-      yesBtn.style.fontSize = `${1.1 + (yesScale - 1) * 0.6}rem`;
-      noBtn.style.fontSize  = `${1.1 - (1 - noScale) * 0.4}rem`;
-    }
 
     function noFlow(){
       noCount++;
 
       if (noCount === 1){
-  questionText.textContent = "Yo bro";
-} 
-else if (noCount === 2){
-  questionText.textContent = "🤨";
-} 
-else if (noCount === 3){
-  questionText.textContent = "...";
-}
-      hintText.textContent = `No presses: ${noCount}/3`;
-
-      if (noCount === 1){
+        questionText.textContent = "Yo bro";
         mainImg.src = images.no1;
-        setButtonSizes(1.25, 0.9);
-      } else if (noCount === 2){
+        yesBtn.style.transform = "scale(1.2)";
+      } 
+      else if (noCount === 2){
+        questionText.textContent = "🤨";
         mainImg.src = images.no2;
-        setButtonSizes(1.55, 0.75);
-      } else if (noCount === 3){
+        yesBtn.style.transform = "scale(1.4)";
+      } 
+      else if (noCount === 3){
+        questionText.textContent = "...";
         mainImg.src = images.no3;
-        setButtonSizes(1.9, 0.6);
-
-        // takeover mode: yes button dominates the screen
-        // Move buttons into a full-screen overlay
+        yesBtn.style.transform = "scale(1.7)";
+      } 
+      else if (noCount === 4){
+        // TAKEOVER MODE
         const overlay = document.createElement("div");
         overlay.className = "takeover";
-        overlay.id = "takeover";
 
-        // Hide the original row and hint
-        btnRow.classList.add("hidden");
-        hintText.textContent = "Okay… you’ve used up all your NOs 😈";
-
-        // Create a new big YES button (reusing the same button for simplicity)
-        // Clone yes button so we don't break layout
-        const bigYes = yesBtn.cloneNode(true);
-        bigYes.id = "yesBtn"; // keep id for styling
+        const bigYes = document.createElement("button");
         bigYes.textContent = "YES 💚";
-        bigYes.addEventListener("click", yesFlow);
+        bigYes.onclick = yesFlow;
 
         overlay.appendChild(bigYes);
         document.body.appendChild(overlay);
@@ -188,20 +153,13 @@ else if (noCount === 3){
     }
 
     function yesFlow(){
-      // Remove takeover if it exists
-      const overlay = document.getElementById("takeover");
-      if (overlay) overlay.remove();
-
       mainImg.src = images.yes;
-      questionText.textContent = "YAYYY!! 😍💖";
-      hintText.textContent = "Best decision you’ve ever made.";
+      questionText.textContent = "YAYYY!! ❤️";
       btnRow.classList.add("hidden");
     }
 
     yesBtn.addEventListener("click", yesFlow);
-    noBtn.addEventListener("click", () => {
-      if (noCount < 3) noFlow();
-    });
+    noBtn.addEventListener("click", noFlow);
   </script>
 </body>
 </html>
